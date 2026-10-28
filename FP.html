@@ -1,0 +1,560 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cognicare NER | Cognitive Care</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111d;color:#f1f5f9;font-family:Arial,sans-serif}
+header{text-align:center;padding:22px;background:#0b1c2c;border-bottom:2px solid #0ea5e9}
+header h1{margin:0 0 8px;color:#38bdf8}
+header p{margin:0;color:#cbd5e1}
+.container{width:94%;max-width:1150px;margin:22px auto;padding-bottom:350px}
+.card{background:#10263b;border:1px solid #284b68;border-radius:15px;padding:19px;margin-bottom:17px}
+h2{color:#38bdf8;margin-top:0}
+input,select{width:100%;padding:12px;margin:7px 0;background:#071827;color:white;border:1px solid #31536c;border-radius:8px}
+button{padding:11px 14px;border:0;border-radius:8px;background:#0284c7;color:white;cursor:pointer;font-weight:bold;margin:4px}
+button:hover{background:#0369a1}
+.primary{width:100%;margin:8px 0}
+.danger{background:#dc2626}
+#login{max-width:420px;width:92%;margin:35px auto}
+#app{display:none}
+.score{font-size:42px;color:#4ade80;font-weight:bold}
+.games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.game{background:#081a29;border:1px solid #31536c;border-radius:12px;padding:14px}
+.game h3{margin:3px 0 8px}
+.game p{color:#cbd5e1;font-size:13px;min-height:32px}
+.game button{width:100%;margin:0}
+#gameArea{display:none;margin-top:18px;background:#071927;padding:17px;border:1px solid #38bdf8;border-radius:12px;text-align:center}
+#gameMessage{line-height:1.6}
+#gameContent{margin:15px 0}
+#gameResult{color:#4ade80;line-height:1.6;font-weight:bold}
+.big{font-size:34px;letter-spacing:4px;margin:18px 0;color:#7dd3fc;overflow-wrap:anywhere}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:360px;margin:12px auto}
+.grid button{font-size:24px;min-height:58px;margin:0}
+.note{font-size:12px;color:#94a3b8;line-height:1.5}
+.reminder{background:#071927;padding:12px;margin-top:8px;border-radius:9px;overflow-wrap:anywhere}
+#alarmNotice{display:none;background:#7f1d1d;border:2px solid #f87171;border-radius:12px;padding:14px;margin-top:14px;text-align:center}
+#chatPanel{position:fixed;right:12px;bottom:12px;width:350px;max-width:calc(100% - 24px);z-index:10;background:#081521;border:1px solid #0ea5e9;border-radius:14px;overflow:hidden;box-shadow:0 0 25px #0008}
+.chatHead{background:#10263b;padding:11px;display:flex;gap:10px;align-items:center}
+.robot{font-size:25px}
+.status{font-size:12px;color:#4ade80;margin-top:3px}
+#chat{height:110px;overflow:auto;padding:9px}
+.msg{padding:9px;margin:7px 0;border-radius:9px;line-height:1.4;overflow-wrap:anywhere}
+.ai{background:#172b40}
+.user{background:#075985;margin-left:14%}
+.chatControls{display:flex;gap:4px;padding:7px;border-top:1px solid #284b68}
+.chatControls input{min-width:0;flex:1;margin:0}
+.chatControls button{margin:0;padding:9px}
+@media(max-width:700px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}.container{padding-bottom:350px}}
+@media(max-width:430px){.games{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🧠 Cognicare NER</h1>
+<p>AI-Based Cognitive Gaming & Memory Assistance Platform</p>
+</header>
+
+<section id="login" class="card">
+<h2>Welcome 👋</h2>
+<p>Your cognitive care companion</p>
+<input id="username" placeholder="Enter your name">
+<select id="role"><option value="elderly">Elderly User</option><option value="caregiver">Caregiver</option></select>
+<select id="language">
+<option value="en-IN">English</option>
+<option value="hi-IN">Hindi</option>
+<option value="mr-IN">Marathi</option>
+</select>
+<button class="primary" onclick="login()">Enter Cognicare</button>
+</section>
+
+<main id="app" class="container">
+<div class="card">
+<h2 id="welcome">Welcome!</h2>
+<p id="roleText">Choose a game to begin.</p>
+</div>
+
+<div class="card">
+<h2>🏆 Score & Difficulty</h2>
+<div id="score" class="score">0</div>
+<p id="scoreText">Total points</p>
+<label for="difficulty">Select game difficulty</label>
+<select id="difficulty">
+<option value="easy">Easy</option>
+<option value="medium" selected>Medium</option>
+<option value="hard">Hard</option>
+</select>
+<button class="danger" onclick="resetScore()">Reset Score</button>
+<p class="note">Points track game activity only; they are not a medical assessment.</p>
+</div>
+
+<div class="card">
+<h2>🎮 Brain Training Games</h2>
+<div class="games">
+<div class="game"><h3>🧩 Memory</h3><p>Remember a hidden symbol.</p><button onclick="startGame('memory')">Play</button></div>
+<div class="game"><h3>⭐ Attention</h3><p>Find the target star.</p><button onclick="startGame('attention')">Play</button></div>
+<div class="game"><h3>🔢 Number Memory</h3><p>Remember digits.</p><button onclick="startGame('number')">Play</button></div>
+<div class="game"><h3>🎲 Probability</h3><p>Reason about chance.</p><button onclick="startGame('probability')">Play</button></div>
+<div class="game"><h3>🔷 Patterns</h3><p>Predict the next symbol.</p><button onclick="startGame('pattern')">Play</button></div>
+<div class="game"><h3>🔢 Number Sequence</h3><p>Find the missing number.</p><button onclick="startGame('sequence')">Play</button></div>
+<div class="game"><h3>🃏 Matching Pairs</h3><p>Find matching symbols.</p><button onclick="startGame('matching')">Play</button></div>
+<div class="game"><h3>⚡ Reaction Time</h3><p>Click when the signal turns green.</p><button onclick="startGame('reaction')">Play</button></div>
+<div class="game"><h3>🔤 Word Memory</h3><p>Recall a word.</p><button onclick="startGame('word')">Play</button></div>
+<div class="game"><h3>➕ Mental Math</h3><p>Solve five calculations.</p><button onclick="startGame('math')">Play</button></div>
+<div class="game"><h3>🎨 Color Recognition</h3><p>Identify the requested color.</p><button onclick="startGame('color')">Play</button></div>
+<div class="game"><h3>🕵️ Odd One Out</h3><p>Find the different item.</p><button onclick="startGame('odd')">Play</button></div>
+<div class="game"><h3>🧠 Advanced Memory</h3><p>Remember a longer number.</p><button onclick="startGame('advancedMemory')">Play</button></div>
+<div class="game"><h3>🔄 Reverse Memory</h3><p>Enter digits backwards.</p><button onclick="startGame('reverse')">Play</button></div>
+<div class="game"><h3>🧩 Logic Challenge</h3><p>Solve a reasoning question.</p><button onclick="startGame('logic')">Play</button></div>
+<div class="game"><h3>🎯 Stroop Challenge</h3><p>Identify the ink color.</p><button onclick="startGame('stroop')">Play</button></div>
+<div class="game"><h3>🔎 Visual Search</h3><p>Find the unique symbol.</p><button onclick="startGame('visual')">Play</button></div>
+<div class="game"><h3>🧮 Quick Calculation</h3><p>Calculate under a time limit.</p><button onclick="startGame('quickmath')">Play</button></div>
+</div>
+
+<div id="gameArea">
+<h2 id="gameTitle">Game</h2>
+<p id="gameMessage"></p>
+<div id="gameContent"></div>
+<p id="gameResult" aria-live="polite"></p>
+<button class="danger" onclick="closeGame()">Close Game</button>
+</div>
+</div>
+
+<div class="card">
+<h2>⏰ Alarm & Medicine Reminder</h2>
+<input id="reminderName" placeholder="Reminder name, e.g. Take medicine">
+<label for="reminderTime">Date and time</label>
+<input id="reminderTime" type="datetime-local">
+<button class="primary" onclick="setAlarm()">🔔 Set Reminder</button>
+<button class="primary" onclick="testAlarm()">🔊 Test Sound</button>
+<div id="alarmNotice" role="alert">
+<h3>⏰ Reminder!</h3><p id="alarmMessage"></p>
+<button class="danger" onclick="stopAlarm()">Stop Alarm</button>
+</div>
+<h3>Scheduled Reminders</h3>
+<div id="reminders"><p class="note">No reminders set.</p></div>
+<p class="note">Keep the page open for alarms. Browser or device sleep may prevent the alarm from sounding.</p>
+</div>
+
+<div class="card">
+<h2>ℹ️ About Cognicare</h2>
+<p>This demo provides games and reminders for daily cognitive engagement.</p>
+<p class="note">It does not diagnose dementia. Normal performance variation may cause false concern. Healthcare professionals should make clinical decisions.</p>
+</div>
+<button class="primary danger" onclick="logout()">Logout</button>
+</main>
+
+<div id="chatPanel">
+<div class="chatHead"><div class="robot">🤖</div><div><b>Cognicare Voice Assistant</b><div id="status" class="status">● Online</div></div></div>
+<div id="chat"><div class="msg ai">Hello! Ask about your score, games or reminders.</div></div>
+<div class="chatControls">
+<input id="message" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()">
+<button onclick="sendMessage()">➤</button>
+<button onclick="voiceInput()">🎤</button>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let username="",language="en-IN",score=Number(localStorage.getItem("cognicareScore")||0);
+let game="",locked=false,timer=null,reactionTimer=null;
+let recognition=null,reminderId=0,reminderItems=[];
+let alarmLoop=null,audio=null,firstCard=null,busy=false,matched=0;
+
+function login(){
+ username=$("username").value.trim();
+ if(!username){alert("Enter your name first.");return}
+ language=$("language").value;
+ $("login").style.display="none";$("app").style.display="block";
+ $("welcome").textContent="Welcome, "+username+" 👋";
+ $("roleText").textContent=$("role").value==="caregiver"?"Caregiver mode: games and reminders are available.":"Your assistant is ready. Choose any game.";
+ updateScore();speak("Welcome "+username+" to Cognicare.");
+}
+function logout(){
+ clearTimeout(timer);clearTimeout(reactionTimer);
+ if(recognition)recognition.stop();
+ if("speechSynthesis" in window)speechSynthesis.cancel();
+ $("app").style.display="none";$("login").style.display="block";
+}
+function updateScore(){
+ $("score").textContent=score;
+ $("scoreText").textContent="Total points earned: "+score;
+}
+function resetScore(){
+ if(confirm("Reset your game score?")){
+ score=0;localStorage.setItem("cognicareScore","0");updateScore();
+ }
+}
+function closeGame(){
+ clearTimeout(timer);clearTimeout(reactionTimer);
+ locked=true;$("gameArea").style.display="none";
+}
+function startGame(type){
+ clearTimeout(timer);clearTimeout(reactionTimer);
+ game=type;locked=false;firstCard=null;busy=false;matched=0;
+ $("gameArea").style.display="block";
+ $("gameTitle").textContent="🎮 "+({
+ memory:"Memory Game",attention:"Attention Game",number:"Number Memory",
+ probability:"Probability",pattern:"Pattern Recognition",sequence:"Number Sequence",
+ matching:"Matching Pairs",reaction:"Reaction Time",word:"Word Memory",math:"Mental Math",
+ color:"Color Recognition",odd:"Odd One Out",advancedMemory:"Advanced Memory",
+ reverse:"Reverse Memory",logic:"Logic Challenge",stroop:"Stroop Challenge",
+ visual:"Visual Search",quickmath:"Quick Calculation"
+ }[type]);
+ $("gameMessage").textContent="";$("gameContent").innerHTML="";$("gameResult").textContent="";
+ $("gameArea").scrollIntoView({behavior:"smooth",block:"center"});
+ const fn={
+ memory:memoryGame,attention:attentionGame,number:numberGame,
+ probability:probabilityGame,pattern:patternGame,sequence:sequenceGame,
+ matching:matchingGame,reaction:reactionGame,word:wordGame,math:mathGame,
+ color:colorGame,odd:oddGame,advancedMemory:advancedMemoryGame,
+ reverse:reverseGame,logic:logicGame,stroop:stroopGame,
+ visual:visualGame,quickmath:quickMathGame
+ };
+ fn[type]();
+}
+function finish(points,message){
+ if(locked)return;
+ locked=true;clearTimeout(timer);clearTimeout(reactionTimer);
+ score+=points;localStorage.setItem("cognicareScore",String(score));updateScore();
+ $("gameMessage").textContent="Round completed!";
+ $("gameContent").innerHTML="";$("gameResult").textContent=message+" Points: "+points;
+ const b=document.createElement("button");b.textContent="Play Again";b.onclick=()=>startGame(game);
+ $("gameContent").appendChild(b);
+ speak(message);
+}
+function random(a){return a[Math.floor(Math.random()*a.length)]}
+function choices(question,opts,correct,explanation){
+ $("gameMessage").textContent=question;$("gameContent").innerHTML="";
+ opts.forEach(v=>{
+  const b=document.createElement("button");b.textContent=v;
+  b.onclick=()=>finish(String(v)===String(correct)?10:0,
+   String(v)===String(correct)?"Correct! "+explanation:"Correct answer: "+correct+". "+explanation);
+  $("gameContent").appendChild(b);
+ });
+}
+function difficulty(){return $("difficulty").value}
+function digitsLength(){return difficulty()==="easy"?3:difficulty()==="hard"?8:5}
+function memoryGame(){
+ const arr=["🍎","🚗","🐶","⭐","🎈","🌸","🐱","🌙"];
+ const target=random(arr);
+ $("gameMessage").textContent="Remember the object.";
+ $("gameContent").innerHTML='<div class="big">'+target+'</div>';
+ timer=setTimeout(()=>{
+  if(locked)return;
+  choices("Which object did you see?",[target,...arr.filter(x=>x!==target).sort(()=>Math.random()-.5).slice(0,3)],target,"You remembered it.");
+ },difficulty()==="easy"?5000:difficulty()==="hard"?2000:3500);
+}
+function attentionGame(){
+ const arr=["🍎","⭐","🚗","🐶","🌙","🍀","🎈","⚽","🌸"];
+ $("gameMessage").textContent="Find the star.";
+ const grid=document.createElement("div");grid.className="grid";
+ arr.sort(()=>Math.random()-.5).forEach(x=>{
+  const b=document.createElement("button");b.textContent=x;
+  b.onclick=()=>finish(x==="⭐"?10:0,x==="⭐"?"You found the star!":"Try to find the star.");
+  grid.appendChild(b);
+ });
+ $("gameContent").appendChild(grid);
+}
+function numberGame(){
+ const n=Array.from({length:digitsLength()},()=>Math.floor(Math.random()*10)).join("");
+ $("gameMessage").textContent="Memorize this number.";
+ $("gameContent").innerHTML='<div class="big">'+n+'</div>';
+ timer=setTimeout(()=>{
+  if(locked)return;
+  $("gameMessage").textContent="Type the number.";
+  $("gameContent").innerHTML='<input id="answer" inputmode="numeric" placeholder="Enter digits"><button id="check">Check</button>';
+  $("check").onclick=()=>{const a=$("answer").value;if(a!=="")finish(a===n?10:0,a===n?"Excellent memory!":"The number was "+n+".")};
+ },difficulty()==="easy"?6000:difficulty()==="hard"?2000:4000);
+}
+function probabilityGame(){
+ const q=[
+ ["A fair coin is tossed. Chance of heads?",["1 in 2","1 in 4","Certain"],"1 in 2","There are two equally likely outcomes."],
+ ["A six-sided die is rolled. Chance of rolling 6?",["1 in 6","1 in 2","1 in 3"],"1 in 6","Only one side has a six."],
+ ["A bag has 3 red balls and 1 blue ball. Which is more likely?",["Red","Blue","Equal"],"Red","There are more red balls."],
+ ["A certain event has what probability?",["0","0.5","1"],"1","Certain events have probability 1."],
+ ["A bag has 2 green and 2 yellow balls. Which color is more likely?",["Green","Yellow","Equal"],"Equal","Both colors have the same count."]
+ ];
+ const x=random(q);choices(x[0],x[1],x[2],x[3]);
+}
+function patternGame(){
+ const q=[
+ ["What comes next? 🔴 🔵 🔴 🔵 ...",["🔴","🔵","🟢"],"🔴","Colors alternate."],
+ ["⭐ ⭐ 🌙 ⭐ ⭐ ...",["🌙","⭐","☀️"],"🌙","Two stars then a moon."],
+ ["2, 4, 8, 16, ?",["24","32","30"],"32","Each number doubles."],
+ ["A, C, E, G, ?",["H","I","J"],"I","Skip one letter each time."],
+ ["1, 4, 9, 16, ?",["20","25","36"],"25","These are square numbers."]
+ ];
+ const x=random(q);choices(x[0],x[1],x[2],x[3]);
+}
+function sequenceGame(){
+ const q=[
+ ["2, 6, 12, 20, 30, ?",["36","42","40"],"42","The differences increase by 2."],
+ ["1, 1, 2, 3, 5, 8, ?",["11","13","16"],"13","Add the previous two numbers."],
+ ["81, 27, 9, 3, ?",["1","0","2"],"1","Divide by 3."],
+ ["4, 9, 16, 25, ?",["30","36","49"],"36","These are square numbers."],
+ ["3, 8, 15, 24, 35, ?",["46","48","49"],"48","The differences are 5, 7, 9, 11, then 13."]
+ ];
+ const x=random(q);choices(x[0],x[1],x[2],x[3]);
+}
+function matchingGame(){
+ const pairs=["🍎","⭐","🐶","🚗"];
+ const cards=[...pairs,...pairs].sort(()=>Math.random()-.5);
+ let first=null,count=0,lock=false;
+ $("gameMessage").textContent="Find all matching pairs.";
+ const grid=document.createElement("div");grid.className="grid";
+ cards.forEach((sym,i)=>{
+  const b=document.createElement("button");b.textContent="❔";
+  b.onclick=()=>{
+   if(locked||lock||b.dataset.done||b===first)return;
+   b.textContent=sym;
+   if(!first){first=b;return}
+   if(first.textContent===b.textContent){
+    first.dataset.done="1";b.dataset.done="1";first.disabled=true;b.disabled=true;
+    first=null;count++;
+    if(count===pairs.length)finish(10,"You matched all pairs!");
+   }else{
+    lock=true;const prev=first;first=null;
+    setTimeout(()=>{if(!locked){prev.textContent="❔";b.textContent="❔"}lock=false},700);
+   }
+  };
+  grid.appendChild(b);
+ });
+ $("gameContent").appendChild(grid);
+}
+function reactionGame(){
+ $("gameMessage").textContent="Wait for the green signal. Click too early and the round ends.";
+ const b=document.createElement("button");b.textContent="WAIT...";
+ b.style.cssText="width:90%;padding:28px;background:#64748b";
+ $("gameContent").appendChild(b);
+ reactionTimer=setTimeout(()=>{
+  if(locked)return;
+  b.textContent="🟢 CLICK NOW";b.style.background="#16a34a";
+  const start=performance.now();
+  b.onclick=()=>finish(10,"Your reaction time was "+Math.round(performance.now()-start)+" ms.");
+ },1500+Math.random()*3000);
+ b.onclick=()=>{if(!locked&&b.textContent==="WAIT...")finish(0,"You clicked too early. Wait for green.")};
+}
+function wordGame(){
+ const words=["APPLE","GARDEN","FAMILY","FLOWER","RIVER","SUNSHINE","FRIEND","MEMORY"];
+ const word=random(words);
+ $("gameMessage").textContent="Remember the word.";
+ $("gameContent").innerHTML='<div class="big">'+word+'</div>';
+ timer=setTimeout(()=>{
+  if(locked)return;
+  choices("Which word did you see?",[word,...words.filter(w=>w!==word).sort(()=>Math.random()-.5).slice(0,3)],word,"You recalled the word.");
+ },difficulty()==="easy"?6000:difficulty()==="hard"?2000:4000);
+}
+function mathGame(){
+ const max=difficulty()==="easy"?10:difficulty()==="hard"?100:40;
+ const a=1+Math.floor(Math.random()*max),b=1+Math.floor(Math.random()*max);
+ const op=random(["+","-"]),ans=op==="+"?a+b:a-b;
+ choices("Calculate: "+a+" "+op+" "+b+" = ?",[String(ans),String(ans+2),String(ans-1),String(ans+1)],String(ans),"Good calculation.");
+}
+function colorGame(){
+ const cs=[["Red","🔴"],["Blue","🔵"],["Yellow","🟡"],["Green","🟢"]];
+ const target=random(cs);
+ choices("Select the color "+target[0]+".",cs.map(x=>x[1]+" "+x[0]),target[1]+" "+target[0],"You identified the color.");
+}
+function oddGame(){
+ const qs=[
+ ["Which one is different?",["🍎","🍌","🍇","🚗"],"🚗","Three are fruits."],
+ ["Which one is different?",["🐶","🐱","🐰","🌹"],"🌹","Three are animals."],
+ ["Which one is different?",["🚌","🚗","🚲","🍎"],"🍎","Three are vehicles."],
+ ["Which one is different?",["Monday","Tuesday","Friday","Car"],"Car","Three are days."]
+ ];
+ const x=random(qs);choices(x[0],x[1],x[2],x[3]);
+}
+function advancedMemoryGame(){
+ const n=Array.from({length:difficulty()==="easy"?5:difficulty()==="hard"?9:7},()=>Math.floor(Math.random()*10)).join("");
+ $("gameMessage").textContent="Remember this longer number.";
+ $("gameContent").innerHTML='<div class="big">'+n+'</div>';
+ timer=setTimeout(()=>{
+  if(locked)return;
+  $("gameMessage").textContent="Enter the number.";
+  $("gameContent").innerHTML='<input id="answer" inputmode="numeric" placeholder="Enter digits"><button id="check">Check</button>';
+  $("check").onclick=()=>{const a=$("answer").value;if(a!=="")finish(a===n?10:0,a===n?"Perfect recall!":"The number was "+n+".")};
+ },difficulty()==="easy"?7000:difficulty()==="hard"?1800:4000);
+}
+function reverseGame(){
+ const n=Array.from({length:difficulty()==="easy"?3:difficulty()==="hard"?7:5},()=>Math.floor(Math.random()*10)).join("");
+ $("gameMessage").textContent="Remember the digits, then enter them backwards.";
+ $("gameContent").innerHTML='<div class="big">'+n+'</div>';
+ timer=setTimeout(()=>{
+  if(locked)return;
+  $("gameContent").innerHTML='<input id="answer" inputmode="numeric" placeholder="Reverse the digits"><button id="check">Check</button>';
+  $("gameMessage").textContent="Enter the reverse sequence.";
+  $("check").onclick=()=>{const a=$("answer").value;if(a!=="")finish(a===n.split("").reverse().join("")?10:0,a===n.split("").reverse().join("")?"Correct reverse sequence!":"Reverse answer: "+n.split("").reverse().join(""))};
+ },difficulty()==="easy"?6500:difficulty()==="hard"?1800:4000);
+}
+function logicGame(){
+ const q=[
+ ["All roses are flowers. Must all roses fade quickly?",["Yes","No, not necessarily","Impossible"],"No, not necessarily","The premise does not say all flowers fade quickly."],
+ ["All but 9 of 17 sheep run away. How many remain?",["8","9","17"],"9","All but 9 means 9 remain."],
+ ["You pass the person in second place. What place are you in?",["First","Second","Third"],"Second","You take the second person's position."],
+ ["A farmer has 10 cows. All but 3 leave. How many remain?",["3","7","10"],"3","All but 3 means 3 remain."]
+ ];
+ const x=random(q);choices(x[0],x[1],x[2],x[3]);
+}
+function stroopGame(){
+ const q=[
+ {word:"RED",color:"blue",ans:"Blue"},
+ {word:"BLUE",color:"red",ans:"Red"},
+ {word:"GREEN",color:"purple",ans:"Purple"},
+ {word:"YELLOW",color:"green",ans:"Green"}
+ ];
+ const x=random(q);
+ $("gameMessage").textContent="Choose the INK COLOR, not the written word.";
+ $("gameContent").innerHTML='<div class="big" style="color:'+x.color+';letter-spacing:1px">'+x.word+'</div>';
+ ["Red","Blue","Green","Purple"].forEach(c=>{
+  const b=document.createElement("button");b.textContent=c;
+  b.onclick=()=>finish(c===x.ans?10:0,c===x.ans?"Correct ink color!":"The ink color was "+x.ans+".");
+  $("gameContent").appendChild(b);
+ });
+}
+function visualGame(){
+ const target=random(["★","◆","●","▲"]);
+ const arr=Array.from({length:9},()=>random(["★","◆","●","▲"]));
+ arr[Math.floor(Math.random()*arr.length)]=target;
+ // Ensure there is at least one different symbol.
+ const different=random(["★","◆","●","▲"].filter(x=>x!==target));
+ arr[Math.floor(Math.random()*arr.length)]=different;
+ $("gameMessage").textContent="Find the unique symbol: "+target;
+ const grid=document.createElement("div");grid.className="grid";
+ arr.forEach(x=>{
+  const b=document.createElement("button");b.textContent=x;
+  b.onclick=()=>finish(x===target?10:0,x===target?"Correct target!":"Look for the requested symbol.");
+  grid.appendChild(b);
+ });
+ $("gameContent").appendChild(grid);
+}
+function quickMathGame(){
+ const a=10+Math.floor(Math.random()*80),b=1+Math.floor(Math.random()*20);
+ const ans=a+b;
+ $("gameMessage").textContent="Answer before the 10-second timer runs out!";
+ $("gameContent").innerHTML='<h2>'+a+" + "+b+' = ?</h2><input id="answer" type="number" placeholder="Answer"><button id="check">Submit</button>';
+ let done=false;
+ const finishQuick=(ok)=>{
+  if(done||locked)return;done=true;
+  finish(ok?10:0,ok?"Correct calculation!":"Correct answer: "+ans+".");
+ };
+ $("check").onclick=()=>finishQuick($("answer").value!==""&&Number($("answer").value)===ans);
+ timer=setTimeout(()=>finishQuick(false),10000);
+}
+
+/* ALARM */
+function setAlarm(){
+ const name=$("reminderName").value.trim(),value=$("reminderTime").value;
+ if(!name||!value){alert("Enter a reminder name and date/time.");return}
+ const when=new Date(value).getTime(),delay=when-Date.now();
+ if(!Number.isFinite(when)||delay<=0){alert("Select a future date and time.");return}
+ if(delay>2147480000){alert("Please select a time within about 24 days.");return}
+ const item={id:++reminderId,name,when,timer:setTimeout(()=>ringAlarm(reminderId),delay)};
+ // Capture the correct ID even if other reminders are set later.
+ clearTimeout(item.timer);
+ item.timer=setTimeout(()=>ringAlarm(item.id),delay);
+ reminderItems.push(item);renderReminders();
+ $("reminderName").value="";$("reminderTime").value="";
+ alert("Reminder scheduled.");
+}
+function renderReminders(){
+ const list=$("reminders");list.innerHTML="";
+ if(!reminderItems.length){list.innerHTML='<p class="note">No reminders set.</p>';return}
+ reminderItems.slice().sort((a,b)=>a.when-b.when).forEach(item=>{
+  const d=document.createElement("div");d.className="reminder";
+  const p=document.createElement("p");p.textContent="⏰ "+item.name+" — "+new Date(item.when).toLocaleString();
+  const b=document.createElement("button");b.textContent="Cancel";b.className="danger";
+  b.onclick=()=>{clearTimeout(item.timer);reminderItems=reminderItems.filter(x=>x.id!==item.id);renderReminders()};
+  d.append(p,b);list.appendChild(d);
+ });
+}
+function ringAlarm(id){
+ const item=reminderItems.find(x=>x.id===id);if(!item)return;
+ $("alarmMessage").textContent=item.name;$("alarmNotice").style.display="block";
+ reminderItems=reminderItems.filter(x=>x.id!==id);renderReminders();
+ startSound();speak("Reminder. "+item.name);
+}
+function startSound(){
+ stopSound();
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  audio=new AC();audio.resume();let hi=true;
+  alarmLoop=setInterval(()=>{
+   if(!audio)return;
+   const o=audio.createOscillator(),g=audio.createGain();
+   o.connect(g);g.connect(audio.destination);o.frequency.value=hi?880:660;
+   g.gain.setValueAtTime(.15,audio.currentTime);
+   g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.3);
+   o.start();o.stop(audio.currentTime+.3);hi=!hi;
+  },500);
+ }catch(e){}
+}
+function stopSound(){
+ if(alarmLoop){clearInterval(alarmLoop);alarmLoop=null}
+ if(audio){audio.close().catch(()=>{});audio=null}
+}
+function testAlarm(){
+ $("alarmMessage").textContent="This is a test alarm.";
+ $("alarmNotice").style.display="block";startSound();
+}
+function stopAlarm(){
+ stopSound();if("speechSynthesis"in window)speechSynthesis.cancel();
+ $("alarmNotice").style.display="none";$("status").textContent="● Online";
+}
+
+/* VOICE ASSISTANT */
+function addMessage(text,type){
+ const d=document.createElement("div");d.className="msg "+type;d.textContent=text;
+ $("chat").appendChild(d);$("chat").scrollTop=$("chat").scrollHeight;
+}
+function sendMessage(){
+ const input=$("message"),text=input.value.trim();if(!text)return;
+ addMessage(text,"user");input.value="";
+ const reply=getReply(text);addMessage(reply,"ai");speak(reply);
+}
+function getReply(text){
+ const t=text.toLowerCase();
+ if(t.includes("score"))return "Your score is "+score+" points.";
+ if(t.includes("alarm")||t.includes("reminder")||t.includes("medicine"))return "Use the reminder section to schedule medicine, water or activity reminders.";
+ const commands=[
+ ["probability","probability"],["pattern","pattern"],["sequence","sequence"],
+ ["matching","matching"],["reaction","reaction"],["word","word"],
+ ["math","math"],["color","color"],["odd","odd"],["attention","attention"],
+ ["number","number"],["memory","memory"],["logic","logic"],
+ ["stroop","stroop"],["visual","visual"],["reverse","reverse"]
+ ];
+ for(const [word,type] of commands){
+  if(t.includes(word)){startGame(type);return "Let's start the "+word+" game."}
+ }
+ if(t.includes("hello")||t.includes("hi")||t.includes("namaste"))return "Hello "+(username||"friend")+"! How are you today?";
+ if(t.includes("thank"))return "You're welcome! Would you like to play a game?";
+ if(t.includes("help"))return "I can open games, tell you your score and explain reminders.";
+ return "I'm here to help. Ask about games, your score or reminders.";
+}
+function speak(text){
+ if(!("speechSynthesis"in window))return;
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);u.lang=language;u.rate=.9;
+ u.onstart=()=>$("status").textContent="● Speaking...";
+ u.onend=()=>$("status").textContent="● Online";
+ speechSynthesis.speak(u);
+}
+function voiceInput(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){alert("Voice input may not be supported in this browser. Try Chrome.");return}
+ if(recognition){recognition.stop();recognition=null;return}
+ recognition=new SR();recognition.lang=language;recognition.continuous=false;
+ $("status").textContent="● Listening...";
+ recognition.onresult=e=>{$("message").value=e.results[0][0].transcript;recognition=null;sendMessage()};
+ recognition.onerror=()=>{recognition=null;$("status").textContent="● Online"};
+ recognition.onend=()=>{$("status").textContent="● Online";recognition=null};
+ try{recognition.start()}catch(e){recognition=null;$("status").textContent="● Online"}
+}
+updateScore();
+</script>
+</body>
+</html>
